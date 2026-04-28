@@ -1,0 +1,213 @@
+<!-- ================= LOGIN PAGE (login.html) ================= -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - DanaCam</title>
+
+    <!-- font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+
+    <!-- custom css -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- header section starts -->
+    <header>
+
+        <input type="checkbox" id="toggler">
+        <label for="toggler" class="fa-solid fa-bars"></label>
+
+        <a href="index.html" class="logo">DanaCam<span>.</span></a>
+
+        <nav class="navbar">
+            <a href="index.html#home">Beranda</a>
+            <a href="index.html#about">Tentang Kami</a>
+            <a href="index.html#services">Cara Kerja</a>
+            <a href="index.html#review">Komentar</a>
+            <a href="index.html#contact">Kontak</a>
+        </nav>
+
+        <div class="icon">
+            <a href="login.html" class="fa-solid fa-user"></a>
+        </div>
+
+    </header>
+    <!-- header section ends -->
+
+    <!-- login section starts -->
+    <section class="login" id="login">
+
+        <h1 class="heading"><span> Login </span> Pengguna</h1>
+
+        <div class="row">
+
+            <form id="loginForm">
+                <div class="login-icon">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+
+                <h2>Masuk ke Akun Anda</h2>
+
+                <input type="email" placeholder="Email" class="box" id="loginEmail" required>
+                <input type="password" placeholder="Password" class="box" id="loginPassword" required>
+
+                <div class="remember">
+                    <input type="checkbox" id="remember">
+                    <label for="remember">Ingat Saya</label>
+                </div>
+
+                <input type="submit" value="Login" class="btn">
+
+                <p id="loginMessage"></p>
+                <p>Belum punya akun? <a href="#" id="showRegisterLink">Daftar Sekarang</a></p>
+            </form>
+
+            <form id="registerForm" style="display:none;">
+                <div class="login-icon">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+
+                <h2>Daftar Akun Baru</h2>
+
+                <input type="text" placeholder="Nama Lengkap" class="box" id="registerName" required>
+                <input type="email" placeholder="Email" class="box" id="registerEmail" required>
+                <input type="text" placeholder="Nomor Telepon" class="box" id="registerPhone">
+                <input type="password" placeholder="Password" class="box" id="registerPassword" required>
+
+                <input type="submit" value="Daftar" class="btn">
+
+                <p id="registerMessage"></p>
+                <p>Sudah punya akun? <a href="#" id="showLoginLink">Login</a></p>
+            </form>
+
+        </div>
+
+    </section>
+    <!-- login section ends -->
+
+    <!-- footer section starts -->
+    <section class="footer">
+
+        <div class="box-container">
+
+            <div class="box">
+                <h3>Info Kontak</h3>
+                <a href="#">+62 821-6560-8280</a>
+                <a href="#">DanaCam@gmail.com</a>
+                <a href="#">Jl. Cendana, No. 123, Bengkulu</a>
+            </div>
+
+            <div class="credit">Created by <span>C Group</span> | All rights reserved</div>
+
+        </div>
+
+    </section>
+    <!-- footer section ends -->
+
+</body>
+
+<script>
+    const API_BASE_URL = window.location.protocol === "file:"
+        ? "http://127.0.0.1:5000/api"
+        : `${window.location.origin}/api`;
+
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+    const loginMessage = document.getElementById("loginMessage");
+    const registerMessage = document.getElementById("registerMessage");
+    const showRegisterLink = document.getElementById("showRegisterLink");
+    const showLoginLink = document.getElementById("showLoginLink");
+
+    const setMessage = (element, text, isError = false) => {
+        element.textContent = text;
+        element.style.color = isError ? "#dc3545" : "#007bff";
+    };
+
+    showRegisterLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        loginForm.style.display = "none";
+        registerForm.style.display = "block";
+        loginMessage.textContent = "";
+    });
+
+    showLoginLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        registerForm.style.display = "none";
+        loginForm.style.display = "block";
+        registerMessage.textContent = "";
+    });
+
+    loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        setMessage(loginMessage, "Sedang login...", false);
+
+        const payload = {
+            email: document.getElementById("loginEmail").value.trim(),
+            password: document.getElementById("loginPassword").value
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                setMessage(loginMessage, result.error || "Login gagal", true);
+                return;
+            }
+
+            localStorage.setItem("danacam_user", JSON.stringify(result.user));
+            localStorage.setItem("danacam_token", result.token || "");
+
+            setMessage(loginMessage, "Login berhasil. Mengalihkan ke halaman utama...", false);
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 900);
+        } catch (error) {
+            setMessage(loginMessage, "Tidak bisa terhubung ke server backend", true);
+        }
+    });
+
+    registerForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        setMessage(registerMessage, "Sedang membuat akun...", false);
+
+        const payload = {
+            full_name: document.getElementById("registerName").value.trim(),
+            email: document.getElementById("registerEmail").value.trim(),
+            phone: document.getElementById("registerPhone").value.trim(),
+            password: document.getElementById("registerPassword").value
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                setMessage(registerMessage, result.error || "Registrasi gagal", true);
+                return;
+            }
+
+            setMessage(registerMessage, "Registrasi berhasil. Silakan login.", false);
+            registerForm.reset();
+        } catch (error) {
+            setMessage(registerMessage, "Tidak bisa terhubung ke server backend", true);
+        }
+    });
+</script>
+</html>
