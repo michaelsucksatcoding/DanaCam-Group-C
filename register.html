@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Data - DanaCam</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- header -->
+    <header>
+        ...
+    </header>
+
+    <!-- register -->
+    <section class="contact" id="register">
+
+        <h1 class="heading"><span> Verifikasi </span> Data Diri</h1>
+
+        <div class="row">
+
+            <form action="">
+                <h2>Lengkapi Data Anda</h2>
+
+                <input type="text" placeholder="Nama Lengkap" class="box">
+                <input type="number" placeholder="NIK / Nomor KTP" class="box">
+                <input type="email" placeholder="Email" class="box">
+
+                <!-- VERIFIKASI WAJAH -->
+                <h3>Verifikasi Wajah</h3>
+
+                <video id="video" width="300" height="250" autoplay></video>
+
+                <canvas id="canvas" style="display:none;"></canvas>
+
+                <button type="button" class="btn" onclick="captureFace()">Verifikasi Wajah</button>
+
+                <a href="pinjamanuser.html" class="btn">Lanjut Ajukan Pinjaman</a>
+
+                <p id="status"></p>
+
+            </form>
+
+        </div>
+
+    </section>
+
+    <!-- footer -->
+    <section class="footer">
+        ...
+    </section>
+
+    <!-- JAVASCRIPT -->
+    <script src="faceverification.js"></script>
+
+</body>
+
+</html>
