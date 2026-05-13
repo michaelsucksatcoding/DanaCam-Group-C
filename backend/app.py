@@ -13,7 +13,8 @@ from routes.loan import loan_bp
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config.from_object(Config)
-    frontend_dir = Path(__file__).resolve().parent.parent / "frontend" / "frontend"
+    # Serve static frontend assets from ./frontend (repo root)
+    frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
 
     CORS(app)
     db.init_app(app)
