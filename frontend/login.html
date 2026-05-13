@@ -1,0 +1,91 @@
+<!-- ================= login.html (USER LAMA) ================= -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - DanaCam</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">DanaCam<span>.</span></a>
+</header>
+
+<section class="login" id="login">
+
+    <h1 class="heading"><span>Login</span> Pengguna</h1>
+
+    <div class="row">
+
+        <form id="loginForm" onsubmit="loginUser(event)">
+
+            <div class="login-icon">
+                <i class="fa-solid fa-user"></i>
+            </div>
+
+            <h2>Masuk ke Akun Anda</h2>
+
+            <input type="email"
+                   id="loginEmail"
+                   placeholder="Email"
+                   class="box"
+                   required>
+
+            <input type="password"
+                   id="loginPassword"
+                   placeholder="Password"
+                   class="box"
+                   required>
+
+            <button type="submit" class="btn">Login</button>
+
+            <p id="loginStatus"></p>
+
+            <p>Belum punya akun? <a href="register.html">Daftar Sekarang</a></p>
+
+        </form>
+
+    </div>
+
+</section>
+
+<script>
+function loginUser(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+    const status = document.getElementById("loginStatus");
+
+    let allUsers = JSON.parse(localStorage.getItem("allUsers")) || [];
+
+    // Cari user
+    const user = allUsers.find(
+        u => u.email === email && u.password === password
+    );
+
+    if (!user) {
+        status.textContent = "Email atau password salah.";
+        status.style.color = "red";
+        return;
+    }
+
+    // Simpan user aktif
+    localStorage.setItem("currentUser", JSON.stringify(user));
+
+    status.textContent = "Login berhasil! Mengalihkan...";
+    status.style.color = "green";
+
+    setTimeout(() => {
+        window.location.href = "status.html";
+    }, 1000);
+}
+</script>
+
+</body>
+</html>
