@@ -14,7 +14,12 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.config.from_object(Config)
     # Serve static frontend assets from ./frontend (repo root)
+    # Repo historically had frontend in nested folders; support both.
     frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
+    if not (frontend_dir / "index.html").exists():
+        alt = frontend_dir / "frontend"
+        if (alt / "index.html").exists():
+            frontend_dir = alt
 
     CORS(app)
     db.init_app(app)
