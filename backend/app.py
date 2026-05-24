@@ -3,11 +3,12 @@ from pathlib import Path
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 
-from config import Config
-from models import db
-from routes.admin import admin_bp
-from routes.auth import auth_bp
-from routes.loan import loan_bp
+from backend.config import Config
+from backend.models import db
+from backend.routes.admin import admin_bp
+from backend.routes.auth import auth_bp
+from backend.routes.loan import loan_bp
+
 
 
 def create_app() -> Flask:
