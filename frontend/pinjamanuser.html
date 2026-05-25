@@ -1,0 +1,126 @@
+<!-- ================= pinjaman.html ================= -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajukan Pinjaman - DanaCam</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+    <!-- Header kamu -->
+</header>
+
+<section class="contact loan-page" id="pinjaman">
+    <h1 class="heading"><span>Ajukan</span> Pinjaman</h1>
+
+    <div class="row">
+        <form id="loanForm" onsubmit="submitLoan(event)">
+            <h2>Form Pengajuan Dana</h2>
+
+            <input type="text" id="loanNama" class="box" readonly>
+
+            <input type="number"
+                   id="jumlah"
+                   placeholder="Jumlah Pinjaman (Maks. 10.000.000)"
+                   class="box"
+                   min="100000"
+                   max="10000000"
+                   required>
+
+            <input type="number"
+                   id="durasi"
+                   placeholder="Durasi Pinjaman (1-60 bulan)"
+                   class="box"
+                   min="1"
+                   max="60"
+                   required>
+
+            <input type="number"
+                   id="penghasilan"
+                   placeholder="Penghasilan Bulanan"
+                   class="box"
+                   min="500000"
+                   required>
+
+            <textarea id="tujuan"
+                      class="box"
+                      placeholder="Tujuan Pinjaman"
+                      cols="30"
+                      rows="10"
+                      required></textarea>
+
+            <button type="submit" class="btn">Ajukan Sekarang</button>
+
+            <p id="loanStatus">
+                Catatan: Persetujuan bergantung pada kelengkapan data, verifikasi wajah, dan riwayat finansial.
+            </p>
+        </form>
+    </div>
+</section>
+
+<section class="footer">
+    <!-- Footer kamu -->
+</section>
+
+<script>
+// Proteksi halaman
+if (localStorage.getItem("faceVerified") !== "true") {
+    alert("Silakan verifikasi wajah terlebih dahulu!");
+    window.location.href = "register.html";
+}
+
+// Isi nama otomatis
+document.getElementById("loanNama").value = localStorage.getItem("userNama") || "";
+
+// Submit pinjaman
+function submitLoan(event) {
+    event.preventDefault();
+
+    const nama = localStorage.getItem("userNama");
+    const nik = localStorage.getItem("userNik");
+
+    const jumlah = parseInt(document.getElementById("jumlah").value);
+    const durasi = parseInt(document.getElementById("durasi").value);
+    const penghasilan = parseInt(document.getElementById("penghasilan").value);
+    const tujuan = document.getElementById("tujuan").value.trim();
+
+    // Ambil semua data lama
+    let allBorrowers = JSON.parse(localStorage.getItem("allBorrowers")) || [];
+
+    // ID unik sederhana
+    const borrowerId = Date.now();
+
+    // Data baru
+    const newBorrower = {
+        id: borrowerId,
+        nama,
+        nik,
+        jumlah,
+        durasi,
+        penghasilan,
+        tujuan,
+        tanggal: new Date().toISOString(),
+        status: jumlah <= 5000000 ? "Disetujui" : "Ditinjau"
+    };
+
+    // Tambahkan
+    allBorrowers.push(newBorrower);
+
+    // Simpan kembali
+    localStorage.setItem("allBorrowers", JSON.stringify(allBorrowers));
+
+    // Simpan current borrower untuk halaman status
+    localStorage.setItem("currentBorrowerId", borrowerId);
+
+    window.location.href = "status.html";
+}
+</script>
+
+</body>
+</html>

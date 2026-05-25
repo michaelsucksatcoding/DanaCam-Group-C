@@ -326,11 +326,6 @@ header .fa-bars {
     resize: none;
 }
 
-.status-text {
-    font-size: 1.4rem;
-    margin-top: 1rem;
-}
-
 .footer {
     display: flex;
     flex-wrap: wrap;

@@ -1,0 +1,167 @@
+<!-- ================= STATUS PAGE (status.html) - FIXED FULL VERSION ================= -->
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Pinjaman</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+
+        <input type="checkbox" id="toggler">
+        <label for="toggler" class="fa-solid fa-bars"></label>
+
+        <a href="index.html" class="logo">DanaCam<span>.</span></a>
+
+        <nav class="navbar">
+            <a href="index.html">Beranda</a>
+            <a href="register.html">Verifikasi</a>
+            <a href="pinjaman.html">Ajukan</a>
+            <a href="status.html">Status</a>
+        </nav>
+
+        <div class="icon">
+            <a href="login.html" class="fa-solid fa-user"></a>
+        </div>
+
+    </header>
+
+    <!-- STATUS -->
+    <section class="review status-page">
+
+        <h1 class="heading"><span>Status</span> Pinjaman</h1>
+
+        <div class="box-container">
+
+            <div class="box">
+
+                <div class="stars">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+
+                <p id="statusPinjaman"></p>
+                <p id="namaUser"></p>
+                <p id="jumlahPinjaman"></p>
+                <p id="bungaPinjaman"></p>
+                <p id="totalPembayaran"></p>
+                <p id="durasiPinjaman"></p>
+                <p id="cicilanBulanan"></p>
+                <p id="jatuhTempo"></p>
+
+                <div class="user">
+                    <div class="user-info">
+                        <h3>Pembayaran Tepat Waktu</h3>
+                        <span>Hindari denda keterlambatan & jaga skor kredit Anda</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <section class="footer">
+
+        <div class="box-container">
+
+            <div class="box">
+                <h3>Info Kontak</h3>
+                <a href="#">+62 821-6560-8280</a>
+                <a href="#">DanaCam@gmail.com</a>
+                <a href="#">Jl. Cendana, No. 123, Bengkulu</a>
+            </div>
+
+            <div class="credit">Created by <span>C Group</span> | All rights reserved</div>
+
+        </div>
+
+    </section>
+
+    <!-- SCRIPT STATUS -->
+    <script>
+    // Ambil semua data peminjam
+    const allBorrowers = JSON.parse(localStorage.getItem("allBorrowers")) || [];
+
+    // Ambil ID peminjam terbaru / aktif
+    const currentBorrowerId = localStorage.getItem("currentBorrowerId");
+
+    // Validasi
+    if (!allBorrowers.length || !currentBorrowerId) {
+        alert("Data pinjaman tidak ditemukan!");
+        window.location.href = "pinjaman.html";
+    }
+
+    // Cari borrower aktif
+    const borrower = allBorrowers.find(
+        item => item.id == currentBorrowerId
+    );
+
+    if (!borrower) {
+        alert("Data peminjam tidak ditemukan!");
+        window.location.href = "pinjaman.html";
+    }
+
+    // Data
+    const nama = borrower.nama;
+    const jumlah = borrower.jumlah;
+    const durasi = borrower.durasi;
+    const status = borrower.status;
+
+    // Bunga
+    const bungaPersen = 8;
+    const bunga = jumlah * (bungaPersen / 100);
+    const total = jumlah + bunga;
+
+    // Cicilan
+    const cicilan = Math.ceil(total / durasi);
+
+    // Jatuh tempo
+    const today = new Date(borrower.tanggal);
+    const dueDate = new Date(today);
+    dueDate.setMonth(today.getMonth() + durasi);
+
+    // Format rupiah
+    function rupiah(angka) {
+        return "Rp " + angka.toLocaleString("id-ID");
+    }
+
+    // Tampilkan
+    document.getElementById("statusPinjaman").textContent =
+        "Status: " + status;
+
+    document.getElementById("namaUser").textContent =
+        "Nama Peminjam: " + nama;
+
+    document.getElementById("jumlahPinjaman").textContent =
+        "Jumlah Pinjaman: " + rupiah(jumlah);
+
+    document.getElementById("bungaPinjaman").textContent =
+        "Bunga: " + bungaPersen + "% (" + rupiah(bunga) + ")";
+
+    document.getElementById("totalPembayaran").textContent =
+        "Total Pembayaran: " + rupiah(total);
+
+    document.getElementById("durasiPinjaman").textContent =
+        "Durasi Pinjaman: " + durasi + " Bulan";
+
+    document.getElementById("cicilanBulanan").textContent =
+        "Estimasi Cicilan/Bulan: " + rupiah(cicilan);
+
+    document.getElementById("jatuhTempo").textContent =
+        "Jatuh Tempo: " + dueDate.toLocaleDateString("id-ID");
+</script>
+
+</body>
+
+</html>

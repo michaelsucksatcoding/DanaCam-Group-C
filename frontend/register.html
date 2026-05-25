@@ -1,0 +1,202 @@
+<!-- ================= register.html (USER BARU) ================= -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - DanaCam</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">DanaCam<span>.</span></a>
+</header>
+
+<section class="contact" id="register">
+
+    <h1 class="heading"><span>Register</span> Pengguna Baru</h1>
+
+    <div class="row">
+
+        <form id="registerForm" onsubmit="return false;">
+
+            <h2>Buat Akun Baru</h2>
+
+            <input type="text"
+                   id="nama"
+                   placeholder="Nama Lengkap"
+                   class="box"
+                   required>
+
+            <input type="text"
+                   id="nik"
+                   placeholder="NIK / Nomor KTP (16 digit)"
+                   class="box"
+                   inputmode="numeric"
+                   pattern="[0-9]{16}"
+                   maxlength="16"
+                   required>
+
+            <input type="email"
+                   id="email"
+                   placeholder="Email"
+                   class="box"
+                   required>
+
+            <input type="password"
+                   id="password"
+                   placeholder="Password"
+                   class="box"
+                   minlength="6"
+                   required>
+
+            <h3>Verifikasi Wajah</h3>
+
+            <video id="video" width="300" height="250" autoplay playsinline></video>
+
+            <canvas id="canvas" style="display:none;"></canvas>
+
+            <button type="button"
+                    class="btn"
+                    onclick="validateAndVerify()">
+                Register & Verifikasi
+            </button>
+
+            <p id="status">Lengkapi data lalu lakukan verifikasi.</p>
+
+            <p>Sudah punya akun? <a href="login.html">Login</a></p>
+
+        </form>
+
+    </div>
+
+</section>
+
+<script>
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const statusText = document.getElementById("status");
+
+let stream = null;
+
+function updateStatus(msg, error = false) {
+    statusText.textContent = msg;
+    statusText.style.color = error ? "red" : "green";
+}
+
+function validateAndVerify() {
+    const nama = document.getElementById("nama").value.trim();
+    const nik = document.getElementById("nik").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!nama || !nik || !email || !password) {
+        updateStatus("Semua data wajib diisi.", true);
+        return;
+    }
+
+    if (!/^\d{16}$/.test(nik)) {
+        updateStatus("NIK harus 16 digit.", true);
+        return;
+    }
+
+    let allUsers = JSON.parse(localStorage.getItem("allUsers")) || [];
+
+    // Cek email sudah ada
+    const existingUser = allUsers.find(u => u.email === email);
+
+    if (existingUser) {
+        updateStatus("Email sudah terdaftar. Silakan login.", true);
+        return;
+    }
+
+    captureFace();
+}
+
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+        });
+
+        video.srcObject = stream;
+
+        video.onloadedmetadata = async () => {
+            await video.play();
+            updateStatus("Kamera aktif. Pastikan wajah terlihat jelas.");
+        };
+
+    } catch (error) {
+        console.error(error);
+        updateStatus("Gagal mengakses kamera.", true);
+    }
+}
+
+function captureFace() {
+    if (!stream || video.readyState < 2) {
+        updateStatus("Kamera belum siap.", true);
+        return;
+    }
+
+    const nama = document.getElementById("nama").value.trim();
+    const nik = document.getElementById("nik").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    const context = canvas.getContext("2d");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const faceImage = canvas.toDataURL("image/png");
+
+    let allUsers = JSON.parse(localStorage.getItem("allUsers")) || [];
+
+    const newUser = {
+        id: Date.now(),
+        nama,
+        nik,
+        email,
+        password,
+        faceImage
+    };
+
+    // Tambah user baru
+    allUsers.push(newUser);
+
+    localStorage.setItem("allUsers", JSON.stringify(allUsers));
+
+    // Login otomatis setelah register
+    localStorage.setItem("currentUser", JSON.stringify(newUser));
+
+    updateStatus("Registrasi berhasil! Mengalihkan...");
+
+    stopCamera();
+
+    setTimeout(() => {
+        window.location.href = "pinjamanuser.html";
+    }, 1500);
+}
+
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+
+    video.srcObject = null;
+}
+
+window.addEventListener("DOMContentLoaded", startCamera);
+window.addEventListener("beforeunload", stopCamera);
+</script>
+
+</body>
+</html>
