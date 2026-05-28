@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Admin - DanaCam</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .admin-auth-section {
+            padding-top: 14rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+        .admin-card-form {
+            width: 100%;
+            max-width: 450px;
+            background: #fff;
+            border: .1rem solid rgba(0,0,0,0.1);
+            box-shadow: 0 .5rem 1.5rem rgba(0,0,0,0.05);
+            border-radius: .8rem;
+            padding: 3rem;
+        }
+        .admin-card-form h2 {
+            font-size: 2.2rem;
+            color: #222;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: capitalize;
+        }
+        /* Mengembalikan penampilkan input box yang hilang */
+        .admin-card-form .box {
+            width: 100%;
+            margin: .7rem 0;
+            background: #f7f7f7;
+            border: .1rem solid rgba(0,0,0,0.1);
+            padding: 1.2rem 1.4rem;
+            font-size: 1.6rem;
+            color: #222;
+            border-radius: .5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">DanaCam<span>.</span></a>
+    </header>
+
+    <section class="admin-auth-section">
+
+        <div class="admin-card-form">
+
+            <form id="adminRegisterForm" onsubmit="registerAdmin(event)">
+
+                <h2>Buat Akun Administrator</h2>
+
+                <input type="text" id="adminNama" placeholder="Nama Lengkap Admin" class="box" required>
+
+                <input type="email" id="adminEmail" placeholder="Email Kerja Admin" class="box" required>
+
+                <input type="password" id="adminPassword" placeholder="Password (Min 6 Karakter)" class="box" minlength="6" required>
+
+                <button type="submit" class="btn" style="width: 100%; margin-top: 1.5rem;">
+                    Daftar Otoritas Admin
+                </button>
+
+                <div style="text-align: center; font-size: 1.4rem; margin-top: 2rem;">
+                    <p id="regStatus" style="font-weight: bold; margin-bottom: .5rem;"></p>
+                    <p style="color: #666;">Sudah punya akun admin? <a href="admin-login.html" style="color: var(--blue); font-weight: bold;">Login Admin</a></p>
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+    <script>
+        function registerAdmin(event) {
+            event.preventDefault();
+            const nama = document.getElementById("adminNama").value.trim();
+            const email = document.getElementById("adminEmail").value.trim();
+            const password = document.getElementById("adminPassword").value.trim();
+            const status = document.getElementById("regStatus");
+
+            let allAdmins = JSON.parse(localStorage.getItem("allAdmins")) || [];
+
+            const isExist = allAdmins.find(a => a.email === email);
+            if (isExist) {
+                status.textContent = "Gagal! Email admin tersebut sudah terdaftar.";
+                status.style.color = "red";
+                return;
+            }
+
+            const newAdmin = { id: Date.now(), nama, email, password };
+            allAdmins.push(newAdmin);
+            localStorage.setItem("allAdmins", JSON.stringify(allAdmins));
+
+            status.textContent = "Akun Admin Berhasil Dibuat! Mengalihkan...";
+            status.style.color = "green";
+
+            setTimeout(() => {
+                window.location.href = "admin-login.html";
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

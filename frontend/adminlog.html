@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin - DanaCam</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .admin-auth-section {
+            padding-top: 14rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+        .admin-card-form {
+            width: 100%;
+            max-width: 450px;
+            background: #fff;
+            border: .1rem solid rgba(0,0,0,0.1);
+            box-shadow: 0 .5rem 1.5rem rgba(0,0,0,0.05);
+            border-radius: .8rem;
+            padding: 3rem;
+        }
+        .admin-card-form h2 {
+            font-size: 2.2rem;
+            color: #222;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: capitalize;
+        }
+        /* Mengembalikan penampilkan input box yang hilang */
+        .admin-card-form .box {
+            width: 100%;
+            margin: .7rem 0;
+            background: #f7f7f7;
+            border: .1rem solid rgba(0,0,0,0.1);
+            padding: 1.2rem 1.4rem;
+            font-size: 1.6rem;
+            color: #222;
+            border-radius: .5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">DanaCam<span>.</span></a>
+    </header>
+
+    <section class="admin-auth-section">
+
+        <div class="admin-card-form">
+
+            <form id="adminLoginForm" onsubmit="loginAdmin(event)">
+
+                <h2>Masuk Dashboard Admin</h2>
+
+                <input type="email" id="loginAdminEmail" placeholder="Masukkan Email Admin" class="box" required>
+
+                <input type="password" id="loginAdminPassword" placeholder="Masukkan Password" class="box" required>
+
+                <button type="submit" class="btn" style="width: 100%; margin-top: 1.5rem;">
+                    Masuk Sekarang
+                </button>
+
+                <div style="text-align: center; font-size: 1.4rem; margin-top: 2rem;">
+                    <p id="loginStatus" style="font-weight: bold; margin-bottom: .5rem;"></p>
+                    <p style="color: #666;">Admin Baru? <a href="admin-register.html" style="color: var(--blue); font-weight: bold;">Daftar Admin</a></p>
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+    <script>
+        function loginAdmin(event) {
+            event.preventDefault();
+            const email = document.getElementById("loginAdminEmail").value.trim();
+            const password = document.getElementById("loginAdminPassword").value.trim();
+            const status = document.getElementById("loginStatus");
+
+            let allAdmins = JSON.parse(localStorage.getItem("allAdmins")) || [];
+            const admin = allAdmins.find(a => a.email === email && a.password === password);
+
+            if (!admin) {
+                status.textContent = "Error: Email atau Password Salah!";
+                status.style.color = "red";
+                return;
+            }
+
+            localStorage.setItem("currentAdmin", JSON.stringify(admin));
+
+            status.textContent = "Akses Valid! Membuka panel kendali...";
+            status.style.color = "green";
+
+            setTimeout(() => {
+                window.location.href = "admin.html";
+            }, 1200);
+        }
+    </script>
+</body>
+</html>

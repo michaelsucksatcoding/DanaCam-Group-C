@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Eksekutif Admin - DanaCam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .admin-container { padding: 12rem 4% 4rem; max-width: 1200px; margin: 0 auto; }
+        .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+        .card-chart { background: #fff; padding: 2rem; border-radius: .8rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,0.05); }
+        .admin-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0 3rem; background: #fff; box-shadow: 0 .5rem 1rem rgba(0,0,0,0.05); border-radius: .5rem; overflow: hidden; font-size: 1.3rem; }
+        .admin-table th, .admin-table td { padding: 1.2rem 1.5rem; text-align: left; border-bottom: .1rem solid #eee; }
+        .admin-table th { background: #222; color: #fff; }
+        .face-thumb { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue); }
+        .status-badge { padding: .4rem .8rem; border-radius: 2rem; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; }
+        .status-badge.pending { background: #ffeaa7; color: #f39c12; }
+        .status-badge.approved { background: #badc58; color: #27ae60; }
+        .status-badge.rejected { background: #ff7675; color: #c0392b; }
+        .btn-action { padding: .5rem 1rem; border-radius: .4rem; color: #fff; cursor: pointer; font-size: 1.2rem; border: none; margin-right: .3rem; }
+        .btn-approve { background: #2ecc71; } .btn-reject { background: #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="logo">DanaCam <span>Admin.</span></a>
+        <div class="icon"><a href="javascript:void(0)" onclick="logoutAdmin()" class="fa-solid fa-right-from-bracket" title="Logout"></a></div>
+    </header>
+
+    <div class="admin-container">
+        <h1 class="heading"><span>Panel</span> Kendali Keuangan</h1>
+
+        <div class="grid-dashboard">
+            <div class="card-chart">
+                <h3>Grafik Arus Kas (Pemasukan vs Pengeluaran)</h3>
+                <canvas id="financialChart"></canvas>
+            </div>
+            <div class="card-chart" style="display: flex; flex-direction: column; justify-content: center;">
+                <h3>Ringkasan Saldo Kas</h3>
+                <h1 id="totalPemasukanText" style="color: #2ecc71; margin: 1rem 0;">Pemasukan: Rp 0</h1>
+                <h1 id="totalPengeluaranText" style="color: #e74c3c;">Pengeluaran: Rp 0</h1>
+            </div>
+        </div>
+
+        <h2>Daftar Pengajuan Pinjaman & e-KYC</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Data Debitur</th>
+                    <th>Jumlah Dana</th>
+                    <th>Tujuan</th>
+                    <th>Status</th>
+                    <th>Aksi Admin</th>
+                </tr>
+            </thead>
+            <tbody id="loanTableBody"></tbody>
+        </table>
+
+        <h2>Riwayat Pengembalian & Angsuran Selesai</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nama Pengguna</th>
+                    <th>NIK</th>
+                    <th>Jumlah Angsuran</th>
+                    <th>Tanggal Bayar</th>
+                    <th>Status Keterangan</th>
+                </tr>
+            </thead>
+            <tbody id="installmentTableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // Proteksi Halaman Admin
+        if (!localStorage.getItem("currentAdmin")) {
+            alert("Akses ditolak!"); window.location.href = "admin-login.html";
+        }
+        function logoutAdmin() {
+            localStorage.removeItem("currentAdmin"); window.location.href = "admin-login.html";
+        }
+
+        let financialChartInstance = null;
+
+        function loadAdminDashboard() {
+            const allUsers = JSON.parse(localStorage.getItem("allUsers")) || [];
+            const allBorrowers = JSON.parse(localStorage.getItem("allBorrowers")) || [];
+            const allPayments = JSON.parse(localStorage.getItem("allPayments")) || []; // Data dummy/nyata angsuran
+
+            let totalPengeluaran = 0; // Total dari dana pinjaman yang disetujui keluar
+            let totalPemasukan = 0;   // Total dana angsuran kembali masuk
+
+            // 1. ISI TABEL PINJAMAN
+            const loanBody = document.getElementById("loanTableBody");
+            loanBody.innerHTML = allBorrowers.length === 0 ? "<tr><td colspan='6'>Belum ada pengajuan.</td></tr>" : "";
+            
+            allBorrowers.forEach(loan => {
+                const userObj = allUsers.find(u => u.nik === loan.nik) || {};
+                const rupiah = "Rp " + loan.jumlah.toLocaleString("id-ID");
+                
+                if (loan.status === "Disetujui") totalPengeluaran += loan.jumlah;
+
+                let badgeClass = "pending";
+                if(loan.status === "Disetujui") badgeClass = "approved";
+                if(loan.status === "Ditolak") badgeClass = "rejected";
+
+                loanBody.innerHTML += `
+                    <tr>
+                        <td><img src="${userObj.faceImage || 'https://via.placeholder.com/50'}" class="face-thumb"></td>
+                        <td><b>${loan.nama}</b><br><small>NIK: ${loan.nik}</small></td>
+                        <td>${rupiah}<br><small>Tenor: ${loan.durasi} Bln</small></td>
+                        <td>${loan.tujuan}</td>
+                        <td><span class="status-badge ${badgeClass}">${loan.status || 'Pending'}</span></td>
+                        <td>
+                            ${loan.status !== "Disetujui" && loan.status !== "Ditolak" ? `
+                                <button class="btn-action btn-approve" onclick="actionLoan(${loan.id}, 'Disetujui')">Setujui</button>
+                                <button class="btn-action btn-reject" onclick="actionLoan(${loan.id}, 'Ditolak')">Tolak</button>
+                            ` : '-'}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // 2. ISI TABEL ANGSURAN (Membaca data user yang sudah membayar)
+            // Jika data payment kosong, kita buatkan simulasi pembayaran sukses otomatis untuk demo data
+            const instBody = document.getElementById("installmentTableBody");
+            if (allPayments.length === 0 && totalPengeluaran > 0) {
+                // Simulasi otomatis: anggap user pertama sudah bayar cicilan pertama (Pokok + Bunga 8%)
+                const approvedLoan = allBorrowers.find(b => b.status === "Disetujui");
+                if (approvedLoan) {
+                    const cicilanPerBulan = (approvedLoan.jumlah / approvedLoan.durasi) * 1.08;
+                    allPayments.push({
+                        nama: approvedLoan.nama, nik: approvedLoan.nik,
+                        jumlahBayar: cicilanPerBulan, tanggal: new Date().toLocaleDateString('id-ID'), ket: "Angsuran Bulan 1 Berhasil"
+                    });
+                    localStorage.setItem("allPayments", JSON.stringify(allPayments));
+                }
+            }
+
+            instBody.innerHTML = allPayments.length === 0 ? "<tr><td colspan='5'>Belum ada riwayat pembayaran masuk.</td></tr>" : "";
+            allPayments.forEach(p => {
+                totalPemasukan += p.jumlahBayar;
+                instBody.innerHTML += `
+                    <tr>
+                        <td><b>${p.nama}</b></td>
+                        <td>${p.nik}</td>
+                        <td style="color: #2ecc71; font-weight:bold;">Rp ${Math.round(p.jumlahBayar).toLocaleString("id-ID")}</td>
+                        <td>${p.tanggal}</td>
+                        <td><mark style="background: #badc58; border-radius:.3rem; padding:.2rem .5rem;">${p.ket}</mark></td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById("totalPemasukanText").textContent = "Pemasukan: Rp " + Math.round(totalPemasukan).toLocaleString("id-ID");
+            document.getElementById("totalPengeluaranText").textContent = "Pengeluaran: Rp " + Math.round(totalPengeluaran).toLocaleString("id-ID");
+
+            // 3. RENDER / UPDATE DIAGRAM CHART.JS
+            renderChart(totalPemasukan, totalPengeluaran);
+        }
+
+        function actionLoan(loanId, status) {
+            let allBorrowers = JSON.parse(localStorage.getItem("allBorrowers")) || [];
+            const idx = allBorrowers.findIndex(l => l.id === loanId);
+            if(idx !== -1) {
+                allBorrowers[idx].status = status;
+                localStorage.setItem("allBorrowers", JSON.stringify(allBorrowers));
+                // Bersihkan histori payment simulasi lama agar dikalkulasi ulang dengan pinjaman baru
+                localStorage.removeItem("allPayments");
+                alert(`Pengajuan resmi statusnya menjadi: ${status}`);
+                loadAdminDashboard();
+            }
+        }
+
+        function renderChart(pemasukan, pengeluaran) {
+            const ctx = document.getElementById('financialChart').getContext('2d');
+            if (financialChartInstance) financialChartInstance.destroy(); // Hancurkan chart lama sebelum buat baru
+
+            financialChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Pemasukan (Angsuran)', 'Pengeluaran (Pinjaman Diberikan)'],
+                    datasets: [{
+                        label: 'Laporan Keuangan Rupiah (Rp)',
+                        data: [pemasukan, pengeluaran],
+                        backgroundColor: ['#2ecc71', '#e74c3c'],
+                        borderWidth: 1
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", loadAdminDashboard);
+    </script>
+</body>
+</html>
