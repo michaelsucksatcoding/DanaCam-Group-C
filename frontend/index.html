@@ -23,7 +23,7 @@
         <input type="checkbox" name="" id="toggler">
         <label for="toggler" class="fa-solid fa-bars"></label>
 
-        <a href="#" class="logo">DanaCam<span>.</span></a>
+        <a href="#" class="logo">DanaCam<span id="secretDot" style="cursor: default; color: var(--blue);">.</span></a>
 
         <nav class="navbar">
             <a href="#home">Beranda</a>
@@ -227,6 +227,27 @@
 
     </section>
     <!-- footer section ends-->
+
+    <script>
+        let clickCount = 0;
+        const secretDot = document.getElementById("secretDot");
+
+        secretDot.addEventListener("click", () => {
+            clickCount++;
+
+            // Opsional: berikan efek log di konsol untuk mempermudah Anda saat testing
+            console.log(`Tombol rahasia diklik: ${clickCount} kali`);
+
+            if (clickCount === 9) {
+                clickCount = 0; // Reset hitungan
+                alert("Gerbang Admin Terbuka! Mengalihkan ke halaman login admin...");
+                window.location.href = "admin-login.html";
+            }
+        });
+
+        // Reset hitungan jika dalam 5 detik tidak dilanjutkan kliknya (biar tidak sengaja terakumulasi)
+        setTimeout(() => { clickCount = 0; }, 5000);
+    </script>
 
 </body>
 
