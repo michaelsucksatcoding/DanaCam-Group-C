@@ -39,6 +39,31 @@ def create_app() -> Flask:
     @app.get("/login.html")
     def serve_login():
         return send_from_directory(frontend_dir, "login.html")
+    
+    @app.get("/register.html")
+    def serve_register():
+        return send_from_directory(frontend_dir, "register.html")
+    
+    @app.get("/pinjamanuser.html")
+    def serve_pinjamanuser():
+        return send_from_directory(frontend_dir, "pinjamanuser.html")
+
+    @app.get("/status.html")
+    def serve_status():
+        return send_from_directory(frontend_dir, "status.html")
+    
+    # Tambahkan ini di app.py Anda
+    @app.get("/admin.html")
+    def serve_admin():
+        return send_from_directory(frontend_dir, "admin.html")
+
+    @app.get("/admin-login.html")
+    def serve_admin_login():
+        return send_from_directory(frontend_dir, "adminlog.html")
+
+    @app.get("/admin-register.html")
+    def serve_admin_register():
+        return send_from_directory(frontend_dir, "adminreg.html")
 
     @app.get("/<path:filename>")
     def serve_frontend_asset(filename: str):
