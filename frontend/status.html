@@ -25,7 +25,7 @@
         <nav class="navbar">
             <a href="index.html">Beranda</a>
             <a href="register.html">Verifikasi</a>
-            <a href="pinjaman.html">Ajukan</a>
+            <a href="pinjamanuser.html">Ajukan</a>
             <a href="status.html">Status</a>
         </nav>
 
@@ -90,76 +90,59 @@
 
     <!-- SCRIPT STATUS -->
     <script>
-    // Ambil semua data peminjam
-    const allBorrowers = JSON.parse(localStorage.getItem("allBorrowers")) || [];
+    // Mengambil data pinjaman dari Backend (Flask)
+async function fetchLoanStatus() {
+    // Simulasi: ID user yang sedang login (nanti diganti dengan data dari sesi/token)
+    const userId = 1; 
+    
+    try {
+        // Memanggil API endpoint GET /api/loans?user_id=1
+        const response = await fetch(`http://127.0.0.1:5000/api/loans?user_id=${userId}`);
+        
+        // Cek jika response dari server bermasalah
+        if (!response.ok) {
+            throw new Error("Gagal mengambil data dari server");
+        }
 
-    // Ambil ID peminjam terbaru / aktif
-    const currentBorrowerId = localStorage.getItem("currentBorrowerId");
+        const data = await response.json();
 
-    // Validasi
-    if (!allBorrowers.length || !currentBorrowerId) {
-        alert("Data pinjaman tidak ditemukan!");
-        window.location.href = "pinjaman.html";
+        // Cek apakah user memiliki pinjaman
+        if (data.loans && data.loans.length > 0) {
+            // Mengambil pinjaman terbaru (data pertama dari array)
+            const borrower = data.loans[0]; 
+
+            // Kalkulasi sesuai logikamu sebelumnya
+            const jumlah = borrower.amount;
+            const durasi = borrower.term_months;
+            const status = borrower.status;
+            
+            const bungaPersen = 8;
+            const bunga = jumlah * (bungaPersen / 100);
+            const total = jumlah + bunga;
+
+            // Format rupiah
+            const rupiah = (angka) => "Rp " + angka.toLocaleString("id-ID");
+
+            // Update DOM / Tampilan HTML
+            document.getElementById("statusPinjaman").textContent = "Status: " + status;
+            document.getElementById("jumlahPinjaman").textContent = "Jumlah Pinjaman: " + rupiah(jumlah);
+            document.getElementById("bungaPinjaman").textContent = "Bunga: " + bungaPersen + "% (" + rupiah(bunga) + ")";
+            document.getElementById("totalPembayaran").textContent = "Total Pembayaran: " + rupiah(total);
+            document.getElementById("durasiPinjaman").textContent = "Durasi Pinjaman: " + durasi + " Bulan";
+            
+            // Catatan: Pastikan kamu menambahkan element untuk nama jika diperlukan, 
+            // karena di model Loan tidak ada kolom 'nama', nama diambil dari relasi User.
+        } else {
+            document.getElementById("statusPinjaman").textContent = "Belum ada pinjaman diajukan.";
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        document.getElementById("statusPinjaman").textContent = "Terjadi kesalahan saat memuat data.";
     }
+}
 
-    // Cari borrower aktif
-    const borrower = allBorrowers.find(
-        item => item.id == currentBorrowerId
-    );
-
-    if (!borrower) {
-        alert("Data peminjam tidak ditemukan!");
-        window.location.href = "pinjaman.html";
-    }
-
-    // Data
-    const nama = borrower.nama;
-    const jumlah = borrower.jumlah;
-    const durasi = borrower.durasi;
-    const status = borrower.status;
-
-    // Bunga
-    const bungaPersen = 8;
-    const bunga = jumlah * (bungaPersen / 100);
-    const total = jumlah + bunga;
-
-    // Cicilan
-    const cicilan = Math.ceil(total / durasi);
-
-    // Jatuh tempo
-    const today = new Date(borrower.tanggal);
-    const dueDate = new Date(today);
-    dueDate.setMonth(today.getMonth() + durasi);
-
-    // Format rupiah
-    function rupiah(angka) {
-        return "Rp " + angka.toLocaleString("id-ID");
-    }
-
-    // Tampilkan
-    document.getElementById("statusPinjaman").textContent =
-        "Status: " + status;
-
-    document.getElementById("namaUser").textContent =
-        "Nama Peminjam: " + nama;
-
-    document.getElementById("jumlahPinjaman").textContent =
-        "Jumlah Pinjaman: " + rupiah(jumlah);
-
-    document.getElementById("bungaPinjaman").textContent =
-        "Bunga: " + bungaPersen + "% (" + rupiah(bunga) + ")";
-
-    document.getElementById("totalPembayaran").textContent =
-        "Total Pembayaran: " + rupiah(total);
-
-    document.getElementById("durasiPinjaman").textContent =
-        "Durasi Pinjaman: " + durasi + " Bulan";
-
-    document.getElementById("cicilanBulanan").textContent =
-        "Estimasi Cicilan/Bulan: " + rupiah(cicilan);
-
-    document.getElementById("jatuhTempo").textContent =
-        "Jatuh Tempo: " + dueDate.toLocaleDateString("id-ID");
+// Panggil fungsi saat halaman selesai dimuat
+document.addEventListener("DOMContentLoaded", fetchLoanStatus);
 </script>
 
 </body>
