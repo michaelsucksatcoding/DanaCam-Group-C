@@ -538,3 +538,16 @@ header .fa-bars {
 .login .row form p a:hover {
     text-decoration: underline;
 }
+
+.status-page {
+    padding-top: 14rem !important; /* Memberikan ruang agar tidak tertimpa header */
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.status-page .heading {
+    margin-top: 0;
+    margin-bottom: 3rem;
+}
